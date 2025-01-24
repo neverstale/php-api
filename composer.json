@@ -1,0 +1,37 @@
+{
+  "name": "neverstale/api",
+  "description": "PHP wrapper for the Neverstale API",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "neverstale\\api\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Neverstale",
+      "email": "hello@neverstale.io"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^7.9",
+    "illuminate/collections": "^v10.42.0"
+  },
+  "require-dev": {
+    "symplify/easy-coding-standard": "^12.5",
+    "phpstan/phpstan": "^2.1",
+    "pestphp/pest": "^3.7"
+  },
+  "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
+    "phpstan": "phpstan --memory-limit=1G",
+    "test": "pest"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  }
+}
