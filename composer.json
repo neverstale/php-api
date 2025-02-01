@@ -1,5 +1,5 @@
 {
-  "name": "neverstale/api",
+  "name": "neverstale/php-api",
   "description": "PHP wrapper for the Neverstale API",
   "type": "library",
   "license": "MIT",
