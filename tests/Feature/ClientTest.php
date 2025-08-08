@@ -113,3 +113,72 @@ it('returns a TransactionResult for mutations', function () {
         ->and($result->status)->toBe('success')
         ->and($result->message)->toBe('Flag rescheduled');
 });
+
+it('batch ingests multiple content items', function () {
+    $client = ClientFactory([
+        new Response(200, [], json_encode([
+            'message' => '2 records ingested',
+            'status' => 'success',
+            'data' => [
+                [
+                    'id' => 'content-ulid-1',
+                    'permalink' => 'https://neverstale.io/content/1',
+                    'custom_id' => 'custom-1',
+                    'title' => 'First Content',
+                    'author' => 'Author 1',
+                    'url' => 'https://example.com/1',
+                    'channel_id' => 'channel-ulid-1',
+                    'analysis_status' => 'pending'
+                ],
+                [
+                    'id' => 'content-ulid-2',
+                    'permalink' => 'https://neverstale.io/content/2',
+                    'custom_id' => 'custom-2',
+                    'title' => 'Second Content',
+                    'author' => 'Author 2',
+                    'url' => 'https://example.com/2',
+                    'channel_id' => 'channel-ulid-2',
+                    'analysis_status' => 'pending'
+                ]
+            ]
+        ])),
+    ]);
+
+    $batch = [
+        [
+            'data' => 'First content to analyze',
+            'title' => 'First Content',
+            'author' => 'Author 1',
+            'url' => 'https://example.com/1',
+            'edit_url' => 'https://example.com/edit/1',
+            'custom_id' => 'custom-1',
+            'channel' => 'default',
+            'webhook' => [
+                'endpoint' => 'https://example.com/webhook'
+            ]
+        ],
+        [
+            'data' => 'Second content to analyze',
+            'title' => 'Second Content',
+            'author' => 'Author 2',
+            'url' => 'https://example.com/2',
+            'edit_url' => 'https://example.com/edit/2',
+            'custom_id' => 'custom-2',
+            'channel' => 'default',
+            'webhook' => [
+                'endpoint' => 'https://example.com/webhook'
+            ]
+        ]
+    ];
+
+    $result = $client->batchIngest($batch);
+
+    expect($result->status)->toBe('success');
+    expect($result->message)->toBe('2 records ingested');
+    expect($result->data)->toBeArray();
+    expect($result->data)->toHaveCount(2);
+    expect($result->data[0])->toBeInstanceOf(Content::class);
+    expect($result->data[1])->toBeInstanceOf(Content::class);
+    expect($result->data[0]->id)->toBe('content-ulid-1');
+    expect($result->data[1]->id)->toBe('content-ulid-2');
+});

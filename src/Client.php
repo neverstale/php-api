@@ -89,6 +89,41 @@ class Client
     }
 
     /**
+     * Batch ingest content to Neverstale
+     *
+     * @see https://neverstale.io/docs/content.html#batch-ingesting-content
+     *
+     * @param array<int,array<string,mixed>> $batch Array of content items to ingest (max 100 items)
+     * @throws ApiException|Exception
+     */
+    public function batchIngest(array $batch): TransactionResult
+    {
+        try {
+            $response = $this->_client->post('ingest/batch', [
+                'json' => [
+                    'batch' => $batch,
+                ],
+            ]);
+
+            $body = self::decodeResponseBody($response);
+
+            // Convert each content item in the data array to a Content object
+            if (isset($body['data']) && is_array($body['data'])) {
+                $body['data'] = array_map(function ($item) {
+                    return new Content($item);
+                }, $body['data']);
+            }
+
+            return new TransactionResult($body);
+        } catch (RequestException $e) {
+            $headers = $e->getResponse()?->getHeaders() ?? [];
+            throw new ApiException($e->getCode(), $e->getMessage(), $e, $headers);
+        } catch (GuzzleException $e) {
+            throw new ApiException($e->getCode(), $e->getMessage(), $e);
+        }
+    }
+
+    /**
      * Batch delete content from Neverstale by content ID or custom ID
      *
      * @see https://neverstale.io/docs/content.html#deleting-content
