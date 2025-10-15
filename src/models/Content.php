@@ -37,4 +37,10 @@ class Content extends BaseModel
 
     public ?\DateTime $analyzed_at;
     public ?\DateTime $expired_at;
+
+    /**
+     * Webhook metadata containing version information
+     * @var array|null
+     */
+    public ?array $webhook_metadata = null;
 }

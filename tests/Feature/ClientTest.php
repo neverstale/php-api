@@ -89,6 +89,54 @@ it('retrieves content as a Content model', function () {
         ->and($content->flags)->toBeArray()->toHaveCount(2);
 });
 
+it('parses webhook_metadata when present', function () {
+    $client = ClientFactory([
+        new Response(200, [], json_encode([
+            'data' => [
+                'id' => 'content-ulid-assigned-by-neverstale',
+                'custom_id' => 'custom-id-provided-by-you',
+                'analyzed_at' => '2024-11-11T20:51:43.000000Z',
+                'expired_at' => null,
+                'analysis_status' => 'pending-initial-analysis',
+                'flags' => [],
+                'webhook_metadata' => [
+                    'dispatched_at' => '2025-10-15T19:08:42+00:00',
+                    'content_version' => 1760555322,
+                ],
+            ],
+        ])),
+    ]);
+
+    $content = $client->retrieve('custom-id-provided-by-you');
+
+    expect($content)->toBeInstanceOf(Content::class)
+        ->and($content->webhook_metadata)->toBeArray()
+        ->and($content->webhook_metadata)->toHaveKey('dispatched_at')
+        ->and($content->webhook_metadata)->toHaveKey('content_version')
+        ->and($content->webhook_metadata['dispatched_at'])->toBe('2025-10-15T19:08:42+00:00')
+        ->and($content->webhook_metadata['content_version'])->toBe(1760555322);
+});
+
+it('handles missing webhook_metadata gracefully', function () {
+    $client = ClientFactory([
+        new Response(200, [], json_encode([
+            'data' => [
+                'id' => 'content-ulid-assigned-by-neverstale',
+                'custom_id' => 'custom-id-provided-by-you',
+                'analyzed_at' => '2024-11-11T20:51:43.000000Z',
+                'expired_at' => null,
+                'analysis_status' => 'pending-initial-analysis',
+                'flags' => [],
+            ],
+        ])),
+    ]);
+
+    $content = $client->retrieve('custom-id-provided-by-you');
+
+    expect($content)->toBeInstanceOf(Content::class)
+        ->and($content->webhook_metadata)->toBeNull();
+});
+
 it('returns a TransactionResult for mutations', function () {
     $client = ClientFactory([
         new Response(200, [], json_encode([
